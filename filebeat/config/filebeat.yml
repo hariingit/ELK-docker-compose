@@ -1,0 +1,51 @@
+filebeat.config: # Not entirely sure what this does
+  modules:
+    path: ${path.config}/modules.d/*.yml
+    reload.enabled: false
+
+#
+filebeat.inputs:
+- type: container
+  paths:
+    - '/var/lib/docker/containers/*/*.log'
+- type: docker
+  enabled: true
+  containers:
+    path: "/var/lib/docker/containers"
+    stream: "stdout"
+    ids:
+- type: docker
+  enabled: true
+  containers:
+    path: "/var/lib/docker/containers"
+    stream: all # can be all, stdout or stderr
+    ids:
+      - '*'      - "*"
+
+processors:
+- add_docker_metadata:
+    host: "unix:///var/run/docker.sock"
+- add_docker_metadata: ~
+- add_locale:
+    format: offset
+- add_host_metadata:
+    netinfo.enabled: true
+
+
+- decode_json_fields:
+    fields: ["message"]
+    target: "json"
+    overwrite_keys: true
+  
+  output.elasticsearch:
+          #hosts: ["10.101.177.27:9200"]
+          # indices:
+          #- index: "filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+
+logging.json: true
+logging.metrics.enabled: false
+  setup.kibana:
+      host: "http://3.109.5.168:5601"    
+  output.logstash:
+    hosts: ["10.101.177.27:5044"]   
+    index: "logstash-%{[agent.version]}-%{+yyyy.MM.dd}" 

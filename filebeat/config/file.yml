@@ -1,0 +1,13 @@
+ilebeat.autodiscover:
+  providers:
+    - type: docker
+      hints.enabled: true
+
+filebeat.modules:
+  - module: elasticsearch
+
+output.elasticsearch:
+  hosts: ["http://10.101.177.27:9200"]
+
+setup.kibana:
+  host: "http://3.109.5.168:5601"

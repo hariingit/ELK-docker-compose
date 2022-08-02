@@ -1,0 +1,102 @@
+filebeat.inputs:
+- type: container
+  paths:
+    - '/var/lib/docker/containers/*/*.log'
+
+      #filebeat.autodiscover:
+      #providers:
+      #- type: docker
+      #hints.enabled: true
+filebeat.autodiscover.providers:
+  - type: docker  
+    templates:
+      - condition:
+        contains:
+          docker.container.image: elasticsearch  
+        config:
+          - module: elasticsearch  
+            audit:
+              input:
+                type: container
+                paths:
+                  - "/var/lib/docker/containers/${data.docker.container.id}/*.log"  
+            deprecation:
+              input:
+                type: container
+                paths:
+                  - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+            gc:
+              input:
+                type: container
+                paths:
+                  - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+            server:
+              input:
+                type: container
+                paths:
+                  - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+            slowlog:
+              input:
+                type: container
+                paths:
+                  - "/var/lib/docker/containers/${data.docker.container.id}/*.log" 
+filebeat.modules:  
+  - module: elasticsearch
+processors:
+- add_docker_metadata:
+    host: "unix:///var/run/docker.sock"
+    hints.default_config:
+        type: container
+        paths:
+          - /var/log/containers/*-${data.container.id}.log  # CRI path
+
+- decode_json_fields:
+    fields: ["message"]
+    target: "json"
+    overwrite_keys: true
+  
+  
+  output.elasticsearch:
+    hosts: ["http://10.101.177.27:9200"]
+     hosts: ["http://elasticsearch:9200"]
+  pipelines:
+    - pipeline: "filebeat-%{[agent.version]}-elasticsearch-server-pipeline"
+      when:
+        and:
+          - equals:  
+              container.labels.org_label-schema_url: "https://www.elastic.co/products/elasticsearch"
+          - contains:  
+              message: '"type": "server"'
+    - pipeline: "filebeat-%{[agent.version]}-elasticsearch-deprecation-pipeline"
+      when:
+        and:
+          - equals:
+              container.labels.org_label-schema_url: "https://www.elastic.co/products/elasticsearch"
+          - contains:
+              message: '"type": "deprecation"'
+    - pipeline: "filebeat-%{[agent.version]}-elasticsearch-audit-pipeline"
+      when:
+        and:
+          - equals:
+              container.labels.org_label-schema_url: "https://www.elastic.co/products/elasticsearch"
+          - contains:
+              message: '"type": "audit"'
+    - pipeline: "filebeat-%{[agent.version]}-elasticsearch-slowlog-pipeline"
+      when:
+        and:
+          - equals:
+              container.labels.org_label-schema_url: "https://www.elastic.co/products/elasticsearch"
+          - contains:  
+              message: '_slowlog'
+    - pipeline: "filebeat-%{[agent.version]}-elasticsearch-gc-pipeline"
+      when.equals:  
+        container.labels.org_label-schema_url: "https://www.elastic.co/products/elasticsearch"
+
+setup.kibana:dd
+    #indices:
+    #- index: "logs-%{[agent.version]}-%{+yyyy.MM.dd}"
+      #filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+    username: 'elastic'
+    password: '1zBS0ZVBUqmi03wM1q39'
+  setup.kibana:
+      host: "http://3.109.5.168:5601"        
