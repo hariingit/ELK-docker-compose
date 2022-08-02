@@ -10,6 +10,6 @@ xpack.monitoring.elasticsearch.hosts: [ "http://10.101.177.27:9200" ]
 xpack.monitoring.enabled: true
 xpack.monitoring.elasticsearch.username: elastic
 xpack.monitoring.elasticsearch.password: 3bWmVlVgaAxJYykHywQf
-#xpack.monitoring.elasticsearch.url: "http://10.101.177.27:9200"
+#xpack.monitoring.elasticsearch.url: "http://0.0.0.0:9200"
 log.level: debug
 path.logs: /var/log/logstash

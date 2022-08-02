@@ -81,7 +81,7 @@ services:
         soft: -1
         hard: -1
         #environment:   
-        # ELASTICSEARCH_HOSTS: 10.101.177.27:9200
+        # ELASTICSEARCH_HOSTS: :9200
     volumes:
       - type: bind
         source: ./filebeat/config/filebeat.yml
